@@ -427,18 +427,35 @@ function renderEditTable() {
     });
 }
 
+function syncEditRowsFromDOM() {
+    const rows=document.getElementById("editTableBody").querySelectorAll("tr");
+    rows.forEach((tr,i)=>{
+        const p=editRows[i]; if(!p) return;
+        p.emoji=tr.querySelector(".emoji-inp").value;
+        p.name=tr.querySelector(".name-inp").value;
+        p.color=tr.querySelector(".color-inp").value;
+        if(!p.isZonk){
+            const q=parseInt(tr.querySelector(".quota-inp").value);
+            if(!isNaN(q)) p.quota=q;
+        }
+    });
+}
+
 function deleteRow(i) {
     if(editRows.length<=2){showNotif("Minimal harus ada 2 segmen!");return;}
+    syncEditRowsFromDOM();
     editRows.splice(i,1); renderEditTable();
 }
 
 function addPrize() {
+    syncEditRowsFromDOM();
     editRows.push({id:uid(),name:"Hadiah Baru",emoji:"🎁",quota:5,color:"#7c6af7",isZonk:false});
     renderEditTable();
     document.getElementById("editTableBody").lastElementChild?.scrollIntoView({behavior:"smooth"});
 }
 
 function addZonk() {
+    syncEditRowsFromDOM();
     editRows.push({id:uid(),name:"Zonk",emoji:"💨",quota:99,color:"#555577",isZonk:true});
     renderEditTable();
     document.getElementById("editTableBody").lastElementChild?.scrollIntoView({behavior:"smooth"});
