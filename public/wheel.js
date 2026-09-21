@@ -253,9 +253,18 @@ function renderRuleList() {
 }
 
 // ─── SPIN ────────────────────────────────────────────────────────────────────
+function isLocked(prizeId) {
+    return rules.some(r => r.prizeId === prizeId && !r.used);
+}
+
 function pickWinner(active) {
-    const w=active.map(p=>p.isZonk?Math.min(p.remaining,3):p.remaining);
-    const total=w.reduce((a,b)=>a+b,0);
+    let w=active.map(p=> (!p.isZonk && isLocked(p.id)) ? 0 : (p.isZonk?Math.min(p.remaining,3):p.remaining));
+    let total=w.reduce((a,b)=>a+b,0);
+    if(total===0){
+        // Safety fallback: everything eligible is locked (shouldn't normally happen) — ignore locks
+        w=active.map(p=>p.isZonk?Math.min(p.remaining,3):p.remaining);
+        total=w.reduce((a,b)=>a+b,0);
+    }
     let r=Math.random()*total, acc=0;
     for(let i=0;i<active.length;i++){acc+=w[i];if(r<acc)return i;}
     return active.length-1;
