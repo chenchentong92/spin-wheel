@@ -654,6 +654,10 @@ document.addEventListener("keydown",e=>{
 window.addEventListener("resize", resizeCanvas);
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+document.getElementById("sidebar").classList.add("hidden");
+document.getElementById("sidebarTab").classList.add("visible");
+document.getElementById("sidebarToggle").innerHTML = "&#10095;";
+
 resizeCanvas();
 renderQuota();
 renderPrizeList();
