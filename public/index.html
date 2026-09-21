@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prize Wheel</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-logo">🎡 Prize Wheel</span>
+      <button class="icon-btn" id="sidebarToggle" title="Sembunyikan sidebar">&#10094;</button>
+    </div>
+
+    <div class="sidebar-body">
+
+      <!-- Spin button -->
+      <button class="spin-btn" id="spinBtn">🎰 PUTAR!</button>
+      <p id="spinStatus" class="spin-status"></p>
+
+      <hr class="divider"/>
+
+      <!-- Prize list ringkas -->
+      <div class="section-label">HADIAH AKTIF</div>
+      <div id="prizeList" class="prize-list"></div>
+
+      <div class="sidebar-actions">
+        <button class="action-btn accent" id="openEditBtn">✏️ Edit Prize</button>
+        <button class="action-btn" id="openHistoryBtn">📋 History</button>
+      </div>
+
+      <hr class="divider"/>
+
+      <!-- Quota summary -->
+      <div class="section-label">SISA KUOTA</div>
+      <div id="quotaList" class="quota-list"></div>
+
+      <button class="action-btn danger" id="resetBtn" style="margin-top:12px">↺ Reset Semua</button>
+
+      <hr class="divider"/>
+
+      <!-- Doorprize Rules -->
+      <div class="section-label">DOORPRIZE RULES</div>
+      <div id="ruleList" class="rule-list"></div>
+      <button class="action-btn accent" id="openRulesBtn" style="margin-top:8px">🎯 Edit Rules</button>
+    </div>
+  </aside>
+
+  <!-- Sidebar collapsed tab -->
+  <button id="sidebarTab" class="sidebar-tab" title="Buka sidebar">&#10095;</button>
+
+  <!-- ═══ MAIN AREA ═══ -->
+  <main id="mainArea" class="main-area">
+    <div class="wheel-wrap" id="wheelWrap">
+      <div class="pointer"></div>
+      <canvas id="wheelCanvas"></canvas>
+      <div class="center-hub" id="centerHub">SPIN</div>
+    </div>
+    <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+  </main>
+
+  <!-- ═══ RESULT MODAL ═══ -->
+  <div id="resultModal" class="overlay" aria-hidden="true">
+    <div class="modal-box result-modal-box">
+      <div id="modalEmoji" class="modal-emoji"></div>
+      <div id="modalTitle" class="modal-title"></div>
+      <div id="modalSub"   class="modal-sub"></div>
+      <button onclick="closeResult()" class="modal-btn">Lanjutkan ›</button>
+    </div>
+  </div>
+
+  <!-- ═══ EDIT PRIZE MODAL ═══ -->
+  <div id="editModal" class="overlay" aria-hidden="true">
+    <div class="modal-box edit-modal-box">
+      <div class="modal-header">
+        <h2>✏️ Edit Prize</h2>
+        <button class="icon-btn" onclick="closeEdit()">✕</button>
+      </div>
+
+      <div class="edit-table-wrap">
+        <table class="edit-table" id="editTable">
+          <thead>
+            <tr>
+              <th>Emoji</th>
+              <th>Nama Prize</th>
+              <th>Kuota</th>
+              <th>Warna</th>
+              <th>Tipe</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="editTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-btn" id="addPrizeBtn">+ Tambah Hadiah</button>
+        <button class="action-btn" id="addZonkBtn">+ Tambah Zonk</button>
+        <div style="flex:1"></div>
+        <button class="action-btn" onclick="closeEdit()">Batal</button>
+        <button class="action-btn accent" onclick="saveEdit()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HISTORY MODAL ═══ -->
+  <div id="historyModal" class="overlay" aria-hidden="true">
+    <div class="modal-box history-modal-box">
+      <div class="modal-header">
+        <h2>📋 History & Logs</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="action-btn danger sm" onclick="clearHistory()">Hapus Semua</button>
+          <button class="icon-btn" onclick="closeHistory()">✕</button>
+        </div>
+      </div>
+      <div id="historyBody" class="history-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ DOORPRIZE RESULT MODAL ═══ -->
+  <div id="doorprizeModal" class="overlay" aria-hidden="true">
+    <div class="modal-box result-modal-box doorprize-modal-box">
+      <div class="doorprize-crown">👑</div>
+      <div class="doorprize-label">DOORPRIZE SPECIAL!</div>
+      <div id="dpEmoji" class="modal-emoji"></div>
+      <div id="dpTitle" class="modal-title win"></div>
+      <div id="dpSub"   class="modal-sub"></div>
+      <button onclick="closeDoorprize()" class="modal-btn doorprize-btn">🎉 Klaim Hadiah!</button>
+    </div>
+  </div>
+
+  <!-- ═══ EDIT RULES MODAL ═══ -->
+  <div id="rulesModal" class="overlay" aria-hidden="true">
+    <div class="modal-box edit-modal-box">
+      <div class="modal-header">
+        <h2>🎯 Edit Doorprize Rules</h2>
+        <button class="icon-btn" onclick="closeRules()">✕</button>
+      </div>
+      <div class="edit-table-wrap">
+        <p style="font-size:0.8rem;color:var(--text2);margin-bottom:12px">
+          Set rule kapan spin tertentu <strong>pasti</strong> mendapat hadiah doorprize.<br>
+          Kosongkan Spin # atau Jam jika tidak ingin pakai trigger tersebut.
+        </p>
+        <table class="edit-table" id="rulesTable">
+          <thead>
+            <tr>
+              <th>Hadiah</th>
+              <th>Spin ke-#</th>
+              <th>Jam (HH:MM)</th>
+              <th>Tanggal</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rulesTableBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn" id="addRuleBtn">+ Tambah Rule</button>
+        <div style="flex:1"></div>
+        <button class="action-btn" onclick="closeRules()">Batal</button>
+        <button class="action-btn accent" onclick="saveRules()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ NOTIFICATION ═══ -->
+  <div id="notif" class="notif"></div>
+
+  <!-- ═══ CONFETTI ═══ -->
+  <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+
+  <script src="wheel.js"></script>
+</body>
+</html>
