@@ -793,7 +793,9 @@ document.getElementById("importFileInput").addEventListener("change", (e) => {
 });
 
 document.addEventListener("keydown",e=>{
-    if(e.key==="Escape"){ closeResult();closeEdit();closeHistory();closeRules();closeDoorprize(); }
+    // Edit Prize / Edit Rules hold unsaved draft data — don't let Escape silently discard it
+    // (e.g. a native date/time picker closing on Escape would otherwise bubble up and wipe the form).
+    if(e.key==="Escape"){ closeResult();closeHistory();closeDoorprize(); }
     if((e.key===" "||e.key==="Enter")&&!e.target.closest(".modal-box")){ e.preventDefault();spin(); }
 });
 
