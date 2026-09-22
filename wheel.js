@@ -222,7 +222,7 @@ function renderQuota() {
         <div class="quota-info"><div class="quota-name">${p.emoji} ${p.name}</div>
         <div class="quota-bar"><div class="quota-bar-fill" style="width:${pct}%;background:${p.color}"></div></div></div>
         <span class="quota-num">${p.isZonk?"∞":p.remaining+"/"+p.quota}</span>
-        ${!p.isZonk?`<button class="topup-btn" onclick="topUpPrize(${p.id})" title="Top up kuota untuk hari ini">+</button>`:""}`;
+        ${!p.isZonk?`<button class="topup-btn" onclick="topUpPrize(${p.id})" title="Set kuota untuk hari ini (sisa kemarin hangus)">+</button>`:""}`;
         list.appendChild(el);
     });
 }
@@ -231,22 +231,22 @@ function topUpPrize(id) {
     const prize = prizes.find(p => p.id === id);
     if (!prize) return;
 
-    const input = prompt(`Tambah berapa pcs "${prize.name}" untuk hari ini?\n(Sisa saat ini: ${prize.remaining}/${prize.quota})`);
+    const input = prompt(`Set kuota "${prize.name}" untuk HARI INI berapa pcs?\n(Sisa kemarin, kalau ada, akan hangus dan diganti angka ini)\nSisa saat ini: ${prize.remaining}/${prize.quota}`);
     if (input === null) return;
 
     const n = parseInt(input);
     if (!Number.isFinite(n) || n <= 0) { showNotif("Masukkan angka lebih dari 0"); return; }
 
     const configEntry = prizeConfig.find(p => p.id === id);
-    prize.remaining += n;
-    prize.quota += n;
+    prize.remaining = n;
+    prize.quota = n;
     if (configEntry) configEntry.quota = prize.quota;
     saveConfig();
     savePrizesState();
 
     renderQuota();
     renderPrizeList();
-    showNotif(`✅ +${n} ${prize.name} ditambahkan (sisa ${prize.remaining}/${prize.quota})`, "success");
+    showNotif(`✅ Kuota "${prize.name}" hari ini di-set ${n} pcs`, "success");
 }
 
 function renderPrizeList() {
