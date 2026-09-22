@@ -562,11 +562,27 @@ function renderRulesTable() {
     });
 }
 
+function syncRuleRowsFromDOM() {
+    const rows=document.getElementById("rulesTableBody").querySelectorAll("tr");
+    rows.forEach((tr,i)=>{
+        const r=editRuleRows[i]; if(!r) return;
+        r.prizeId = parseInt(tr.querySelector(".rule-prize-sel").value);
+        const spinVal = tr.querySelector(".rule-spin").value.trim();
+        const timeVal = tr.querySelector(".rule-time").value.trim();
+        const dateVal = tr.querySelector(".rule-date").value.trim();
+        r.spinNo = spinVal ? parseInt(spinVal) : null;
+        r.time   = timeVal || null;
+        r.date   = dateVal || null;
+    });
+}
+
 function deleteRule(i) {
+    syncRuleRowsFromDOM();
     editRuleRows.splice(i,1); renderRulesTable();
 }
 
 function addRule() {
+    syncRuleRowsFromDOM();
     editRuleRows.push({id:uidRule(),prizeId:prizeConfig.find(p=>!p.isZonk)?.id||1,spinNo:null,time:null,date:null,used:false});
     renderRulesTable();
     document.getElementById("rulesTableBody").lastElementChild?.scrollIntoView({behavior:"smooth"});
