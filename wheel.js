@@ -210,9 +210,31 @@ function renderQuota() {
         el.innerHTML=`<span class="quota-dot" style="background:${p.color}"></span>
         <div class="quota-info"><div class="quota-name">${p.emoji} ${p.name}</div>
         <div class="quota-bar"><div class="quota-bar-fill" style="width:${pct}%;background:${p.color}"></div></div></div>
-        <span class="quota-num">${p.isZonk?"∞":p.remaining+"/"+p.quota}</span>`;
+        <span class="quota-num">${p.isZonk?"∞":p.remaining+"/"+p.quota}</span>
+        ${!p.isZonk?`<button class="topup-btn" onclick="topUpPrize(${p.id})" title="Top up kuota untuk hari ini">+</button>`:""}`;
         list.appendChild(el);
     });
+}
+
+function topUpPrize(id) {
+    const prize = prizes.find(p => p.id === id);
+    if (!prize) return;
+
+    const input = prompt(`Tambah berapa pcs "${prize.name}" untuk hari ini?\n(Sisa saat ini: ${prize.remaining}/${prize.quota})`);
+    if (input === null) return;
+
+    const n = parseInt(input);
+    if (!Number.isFinite(n) || n <= 0) { showNotif("Masukkan angka lebih dari 0"); return; }
+
+    const configEntry = prizeConfig.find(p => p.id === id);
+    prize.remaining += n;
+    prize.quota += n;
+    if (configEntry) configEntry.quota = prize.quota;
+    saveConfig();
+
+    renderQuota();
+    renderPrizeList();
+    showNotif(`✅ +${n} ${prize.name} ditambahkan (sisa ${prize.remaining}/${prize.quota})`, "success");
 }
 
 function renderPrizeList() {
