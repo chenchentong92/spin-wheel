@@ -26,7 +26,11 @@ const RULES_DEFAULT = [
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let prizeConfig = loadConfig();
-let prizes      = prizeConfig.map(p => ({ ...p, remaining: p.quota }));
+const savedPrizesState = loadPrizesState();
+let prizes = prizeConfig.map(p => {
+    const saved = savedPrizesState?.find(s => s.id === p.id);
+    return { ...p, remaining: saved ? Math.min(saved.remaining, p.quota) : p.quota };
+});
 let history     = loadHistory();
 let rules       = loadRules();
 let spinning    = false;
@@ -92,6 +96,13 @@ function loadConfig() {
 }
 function saveConfig() {
     try { localStorage.setItem("prizeConfig", JSON.stringify(prizeConfig)); } catch(e){}
+}
+function loadPrizesState() {
+    try { const s=localStorage.getItem("prizesState"); if(s) return JSON.parse(s); } catch(e){}
+    return null;
+}
+function savePrizesState() {
+    try { localStorage.setItem("prizesState", JSON.stringify(prizes.map(p=>({id:p.id, remaining:p.remaining})))); } catch(e){}
 }
 function loadHistory() {
     try { const s=localStorage.getItem("spinHistory"); if(s) return JSON.parse(s); } catch(e){}
@@ -231,6 +242,7 @@ function topUpPrize(id) {
     prize.quota += n;
     if (configEntry) configEntry.quota = prize.quota;
     saveConfig();
+    savePrizesState();
 
     renderQuota();
     renderPrizeList();
@@ -361,6 +373,7 @@ function finishSpin(winner, doorprize=null) {
     canvas.classList.remove("wheel-glow");
     setStatus("");
     winner.remaining=Math.max(0, winner.remaining-1);
+    savePrizesState();
 
     const entry={
         id: Date.now(), name: winner.name, emoji: winner.emoji,
@@ -508,6 +521,7 @@ function saveEdit() {
     const prevMap={};
     prizes.forEach(p=>{prevMap[p.id]=p.remaining;});
     prizes=prizeConfig.map(p=>({...p,remaining:(prevMap[p.id]!==undefined)?Math.min(prevMap[p.id],p.quota):p.quota}));
+    savePrizesState();
     renderQuota(); renderPrizeList(); drawWheel(); closeEdit();
     showNotif("✅ Prize berhasil disimpan!","success");
 }
@@ -611,7 +625,7 @@ function resetAll() {
     currentAngle=0; spinCount=0;
     document.getElementById("spinBtn").disabled=false;
     setStatus("");
-    saveRulesState(); renderQuota(); renderPrizeList(); renderRuleList(); drawWheel();
+    savePrizesState(); saveRulesState(); renderQuota(); renderPrizeList(); renderRuleList(); drawWheel();
     showNotif("✅ Kuota direset!","success");
 }
 
