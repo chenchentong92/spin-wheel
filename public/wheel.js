@@ -684,6 +684,67 @@ function launchConfetti() {
     loop();
 }
 
+// ─── BACKUP (EXPORT / IMPORT) ─────────────────────────────────────────────────
+function exportState() {
+    const data = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        prizeConfig,
+        prizesRemaining: prizes.map(p => ({ id: p.id, remaining: p.remaining })),
+        rules,
+        history,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `spin-wheel-backup-${todayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showNotif("✅ Backup di-download!", "success");
+}
+
+function importState(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        let data;
+        try { data = JSON.parse(reader.result); }
+        catch (e) { showNotif("File tidak valid / rusak"); return; }
+
+        if (!Array.isArray(data.prizeConfig) || !Array.isArray(data.rules)) {
+            showNotif("Format file backup tidak dikenali"); return;
+        }
+
+        prizeConfig = data.prizeConfig;
+        saveConfig();
+
+        const remainingMap = {};
+        (data.prizesRemaining || []).forEach(r => { remainingMap[r.id] = r.remaining; });
+        prizes = prizeConfig.map(p => ({
+            ...p,
+            remaining: remainingMap[p.id] !== undefined ? Math.min(remainingMap[p.id], p.quota) : p.quota,
+        }));
+        savePrizesState();
+
+        rules = data.rules;
+        saveRulesState();
+
+        history = Array.isArray(data.history) ? data.history : [];
+        saveHistoryStorage();
+
+        nextId     = Math.max(...prizeConfig.map(p => p.id), 0) + 1;
+        nextRuleId = Math.max(...rules.map(r => r.id), 0) + 1;
+        currentAngle = 0; spinCount = 0;
+
+        renderQuota(); renderPrizeList(); renderRuleList(); drawWheel();
+        document.getElementById("spinBtn").disabled = getActive().length === 0;
+        showNotif("✅ Backup berhasil di-import!", "success");
+    };
+    reader.readAsText(file);
+}
+
 // ─── EVENT BINDINGS ──────────────────────────────────────────────────────────
 document.getElementById("spinBtn").addEventListener("click", spin);
 document.getElementById("centerHub").addEventListener("click", spin);
@@ -696,6 +757,13 @@ document.getElementById("resetBtn").addEventListener("click", resetAll);
 document.getElementById("addPrizeBtn").addEventListener("click", addPrize);
 document.getElementById("addZonkBtn").addEventListener("click", addZonk);
 document.getElementById("addRuleBtn").addEventListener("click", addRule);
+document.getElementById("exportBtn").addEventListener("click", exportState);
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFileInput").click());
+document.getElementById("importFileInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) importState(file);
+    e.target.value = "";
+});
 
 ["resultModal","editModal","historyModal","rulesModal","doorprizeModal"].forEach(id=>{
     document.getElementById(id).addEventListener("click",function(e){
