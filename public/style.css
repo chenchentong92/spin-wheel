@@ -302,18 +302,19 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1px solid var(--border2);
-  background: var(--card);
-  color: var(--text2);
-  font-size: 0.75rem;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, transform 0.15s;
 }
-.topup-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.topup-btn:hover { background: var(--accent2); border-color: var(--accent2); transform: scale(1.1); }
 
 /* ═══════════════════════════════════════════
    BUTTONS
