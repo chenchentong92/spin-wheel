@@ -307,6 +307,7 @@ function pickWinner(active) {
 function segCenter(idx, active) { const arc=(2*Math.PI)/active.length; return idx*arc+arc/2; }
 function segToAngle(c)          { return -Math.PI/2-c; }
 function setStatus(msg)         { document.getElementById("spinStatus").textContent=msg; }
+function renderSpinCounter()    { document.getElementById("spinCounter").textContent=`Spin ke-${spinCount}`; }
 
 function spin() {
     if(spinning) return;
@@ -314,6 +315,7 @@ function spin() {
     if(active.length===0){ showNotif("Semua kuota hadiah sudah habis!"); return; }
 
     spinning=true; spinCount++;
+    renderSpinCounter();
     document.getElementById("spinBtn").disabled=true;
 
     // Check doorprize rule BEFORE picking winner
@@ -640,7 +642,7 @@ function resetAll() {
     rules=rules.map(r=>({...r,used:false}));
     currentAngle=0; spinCount=0;
     document.getElementById("spinBtn").disabled=false;
-    setStatus("");
+    setStatus(""); renderSpinCounter();
     savePrizesState(); saveRulesState(); renderQuota(); renderPrizeList(); renderRuleList(); drawWheel();
     showNotif("✅ Kuota direset!","success");
 }
@@ -754,7 +756,7 @@ function importState(file) {
         nextRuleId = Math.max(...rules.map(r => r.id), 0) + 1;
         currentAngle = 0; spinCount = 0;
 
-        renderQuota(); renderPrizeList(); renderRuleList(); drawWheel();
+        renderQuota(); renderPrizeList(); renderRuleList(); renderSpinCounter(); drawWheel();
         document.getElementById("spinBtn").disabled = getActive().length === 0;
         showNotif("✅ Backup berhasil di-import!", "success");
     };
@@ -810,3 +812,4 @@ resizeCanvas();
 renderQuota();
 renderPrizeList();
 renderRuleList();
+renderSpinCounter();
