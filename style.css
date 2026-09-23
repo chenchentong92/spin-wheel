@@ -224,6 +224,15 @@ body {
   min-height: 18px;
 }
 
+.spin-counter {
+  font-size: 0.72rem;
+  color: var(--text2);
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+
 /* ═══════════════════════════════════════════
    MISC SIDEBAR COMPONENTS
 ═══════════════════════════════════════════ */
